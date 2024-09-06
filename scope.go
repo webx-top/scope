@@ -17,6 +17,10 @@ func strech(scopeSlice []string, toAdd string, toLen int) []string {
 func MatchScopes(scopeA, scopeB string) bool {
 	scopeASplit := strings.Split(scopeA, ":")
 	scopeBSplit := strings.Split(scopeB, ":")
+	return matchParsedScopes(scopeASplit, scopeBSplit)
+}
+
+func matchParsedScopes(scopeASplit, scopeBSplit []string) bool {
 	scopeALen := len(scopeASplit)
 	scopeBLen := len(scopeBSplit)
 
@@ -42,10 +46,45 @@ func MatchScopes(scopeA, scopeB string) bool {
 
 // ScopeInAllowed is used to check if scope is allowed based on allowed scopes list
 func ScopeInAllowed(scope string, allowedScopes []string) bool {
+	scopeASplit := strings.Split(scope, ":")
 	for _, allowedScope := range allowedScopes {
-		if MatchScopes(scope, allowedScope) {
+		scopeBSplit := strings.Split(allowedScope, ":")
+		if matchParsedScopes(scopeASplit, scopeBSplit) {
 			return true
 		}
 	}
 	return false
+}
+
+func ScopesInAllowed(scopes []string, allowedScopes []string) bool {
+	parsedAllowedScopes := ParseScopeRule(allowedScopes)
+	for _, scopeRequired := range scopes {
+		scopeASplit := strings.Split(scopeRequired, ":")
+		for _, scopeBSplit := range parsedAllowedScopes {
+			if matchParsedScopes(scopeASplit, scopeBSplit) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func scopesInParsedAllowed(scopes []string, parsedAllowedScopes [][]string) bool {
+	for _, scopeRequired := range scopes {
+		scopeASplit := strings.Split(scopeRequired, ":")
+		for _, scopeBSplit := range parsedAllowedScopes {
+			if matchParsedScopes(scopeASplit, scopeBSplit) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func ParseScopeRule(allowedScopes []string) [][]string {
+	parsedAllowedScopes := make([][]string, len(allowedScopes))
+	for index, allowedScope := range allowedScopes {
+		parsedAllowedScopes[index] = strings.Split(allowedScope, ":")
+	}
+	return parsedAllowedScopes
 }
